@@ -118,6 +118,17 @@
                         icon: image,
                         position: place.geometry.location
                     });
+                    if (sent > 0.5) {
+                      marker.setIcon('/res/1.png');
+                    } else if (sent > 0.25) {
+                      marker.setIcon('/res/2.png');
+                    } else if (sent > -0.25) {
+                      marker.setIcon('/res/3.png');
+                    } else if (sent > -0.5) {
+                      marker.setIcon('/res/4.png');
+                    } else {
+                      marker.setIcon('/res/5.png');
+                    }
                 });
                 sentimentGet("detailed", results.businesses[0].id, function callbackB(sentiment) {
                     google.maps.event.addListener(marker, 'click', function() {
