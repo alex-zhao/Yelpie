@@ -149,7 +149,11 @@
         }
 
         function parseDetailed(detailed) {
-
+          var display = {};
+          for (var i = 0; i < 3; i++) {
+            display[detailed[i].keywords[0].text] = detailed[i].keywords[0].sentiment.score;
+          }
+          return display;
         }
 
         function getRadius() {
