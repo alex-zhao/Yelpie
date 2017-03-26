@@ -46,9 +46,10 @@ app.use("/getdata2", function(req, res) {
   //console.log('BLAIR')
   var url = "http://yelpie.mybluemix.net/reviews";
   var id = req.query.id;
+  var type = req.query.type;
 
   request({
-	      url: url+'?type=general&id='+id,
+	      url: url+'?type='+type+'&id='+id,
 		    method: 'GET',
 
 	    },function(err, resp, body){

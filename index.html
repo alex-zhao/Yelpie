@@ -9,10 +9,12 @@
     <style>
         /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
+
         #map {
             height: 100%;
         }
         /* Optional: Makes the sample page fill the window. */
+
         html,
         body {
             height: 100%;
@@ -35,6 +37,7 @@
             anchor: new google.maps.Point(17, 34),
             scaledSize: new google.maps.Size(25, 25)
         };
+
         function initMap() {
             httpPostAsync(getAccessToken);
             var pyrmont = {
@@ -61,6 +64,7 @@
                 }, callback);
             });
         }
+
         function httpPostAsync(callback) {
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.open("POST", "https://api.yelp.com/oauth2/token", true); // true for asynchronous
@@ -71,7 +75,8 @@
             }
             xmlHttp.send("grant_type=client_credentials&client_id=S8ovIvKoG3sAcpD17a4cOw&client_secret=mi1kjVRhoXJ7UpjUF96kTKnOyEkG2Wszla3fwP4AmBSB1Igy3s8d3NpICOkrANLa");
         }
-        function sentimentGet(id, callback) {
+
+        function sentimentGet(type, id, callback) {
             //var xmlHttp = new XMLHttpRequest();
             //xmlHttp.open("GET", "http://yelpie.mybluemix.net/reviews?type=general&id=" + id, true); // true for asynchronous
             //xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -82,11 +87,11 @@
             //xmlHttp.send();
             console.log(id);
             $.ajax({
-                url: "http://0.0.0.0:3000/getdata2?id=" + id,
+                url: "http://0.0.0.0:3000/getdata2?type=" + type + "&id=" + id,
                 method: "GET",
                 dataType: "json",
                 success: function(data) {
-                  console.log("sdf");
+                    console.log("sdf");
                     callback(data);
                 },
                 error: function(error) {
@@ -94,11 +99,13 @@
                 }
             });
         }
+
         function getAccessToken(str) {
             json = JSON.parse(str);
             access_token = json.access_token.toString();
             console.log("ACCCCCESS" + access_token);
         }
+
         function callback(results, status) {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (var i = 0; i < results.length; i++) {
@@ -106,18 +113,22 @@
                 }
             }
         }
+
         function createMarker(place) {
-            var placeLoc = place.geometry.location;
-            var marker = new google.maps.Marker({
-                scaledSize: new google.maps.Size(10, 10),
-                map: map,
-                icon: image,
-                position: place.geometry.location
-            });
             var jank = "?latitude=" + place.geometry.location.toString().substr(1).slice(0, -1).replace(", ", "&longitude=") + "&sort_by=distance";
             httpGetAsync(jank, function callbackR(results) {
-                google.maps.event.addListener(marker, 'click', function() {
-                  sentimentGet(results.businesses[0].id, function callbackB(sentiment) {
+                sentimentGet("general", results.businesses[0].id, function callbackB(sentiment) {
+                    var sent = parseSentiment(sentiment);
+                    var placeLoc = place.geometry.location;
+                    var marker = new google.maps.Marker({
+                        scaledSize: new google.maps.Size(10, 10),
+                        map: map,
+                        icon: image,
+                        position: place.geometry.location
+                    });
+                });
+                sentimentGet("detailed", results.businesses[0].id, function callbackB(sentiment) {
+                    google.maps.event.addListener(marker, 'click', function() {
                         sent = parseSentiment(sentiment);
                         infowindow.setContent(sent.toString());
                         infowindow.open(map, marker);
@@ -127,23 +138,27 @@
                 });
             });
         }
+
         function parseSentiment(sentiment) {
-          var score = 0.0;
-          for (var i = 0; i < 3; i++) {
-            score += sentiment[i].sentiment.document.score;
-          }
-          score /= 3.0;
-          return score;
+            var score = 0.0;
+            for (var i = 0; i < 3; i++) {
+                score += sentiment[i].sentiment.document.score;
+            }
+            score /= 3.0;
+            return score;
         }
+
         function parseDetailed(detailed) {
-          
+
         }
+
         function getRadius() {
             var bounds = map.getBounds();
             var NE = bounds.getNorthEast();
             var SW = bounds.getSouthWest();
             return (Math.abs(NE.lat() - SW.lat()) + Math.abs(NE.lng() - SW.lng())) * 55500;
         }
+
         function httpGetAsync(theUrl, callback) {
             // var xmlHttp = new XMLHttpRequest();
             // xmlHttp.onreadystatechange = function() {
