@@ -5,6 +5,7 @@
     <title>Place searches</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <style>
         /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
@@ -28,6 +29,7 @@
 
         var map;
         var infowindow;
+        var access_token;
         var currentLocation;
         var image = {
             url: 'http://vignette3.wikia.nocookie.net/scream-queens/images/5/52/White-smiley-face-png-white_frowning_face_u2639_icon_256x256.png',
@@ -38,6 +40,7 @@
         };
 
         function initMap() {
+            httpPostAsync(getAccessToken);
             var pyrmont = {
                 lat: 37.548626,
                 lng: -122.059116
@@ -66,6 +69,23 @@
             });
         }
 
+        function httpPostAsync(callback) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("POST", "https://api.yelp.com/oauth2/token", true); // true for asynchronous
+            xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                    callback(xmlHttp.responseText);
+            }
+            xmlHttp.send("grant_type=client_credentials&client_id=S8ovIvKoG3sAcpD17a4cOw&client_secret=mi1kjVRhoXJ7UpjUF96kTKnOyEkG2Wszla3fwP4AmBSB1Igy3s8d3NpICOkrANLa");
+        }
+
+        function getAccessToken(str) {
+            json = JSON.parse(str);
+            access_token = json.access_token.toString();
+            console.log("ACCCCCESS" + access_token);
+        }
+
         function callback(results, status) {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (var i = 0; i < results.length; i++) {
@@ -82,10 +102,13 @@
                 icon: image,
                 position: place.geometry.location
             });
-
-            google.maps.event.addListener(marker, 'click', function() {
-                infowindow.setContent(place.name);
-                infowindow.open(map, this);
+            var jank = "?latitude=" + place.geometry.location.toString().substr(1).slice(0, -1).replace(", ", "&longitude=") + "&sort_by=distance";
+            httpGetAsync(jank, function callbackR(results) {
+                google.maps.event.addListener(marker, 'click', function() {
+                    infowindow.setContent(results.businesses[0].id);
+                    infowindow.open(map, this);
+                    console.log(JSON.stringify(place));
+                });
             });
         }
 
@@ -94,6 +117,30 @@
             var NE = bounds.getNorthEast();
             var SW = bounds.getSouthWest();
             return (Math.abs(NE.lat() - SW.lat()) + Math.abs(NE.lng() - SW.lng())) * 55500;
+        }
+
+        function httpGetAsync(theUrl, callback) {
+
+            // var xmlHttp = new XMLHttpRequest();
+            // xmlHttp.onreadystatechange = function() {
+            //     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            //         callback(xmlHttp.responseText);
+            // }
+            // xmlHttp.open("GET", theUrl, true); // true for asynchronous
+            // xmlHttp.setRequestHeader('Authorization', 'Bearer ' + access_token);
+            // xmlHttp.send();
+            var theUrl = "http://0.0.0.0:3000/getdata" + theUrl;
+            $.ajax({
+                url: theUrl,
+                method: "GET",
+                dataType: "json",
+                success: function(data) {
+                    callback(data);
+                },
+                error: function(error) {
+                    console.log("AHHH BLAIR");
+                }
+            });
         }
     </script>
 </head>
