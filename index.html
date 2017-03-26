@@ -9,10 +9,12 @@
     <style>
         /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
+
         #map {
             height: 100%;
         }
         /* Optional: Makes the sample page fill the window. */
+
         html,
         body {
             height: 100%;
@@ -35,6 +37,7 @@
             anchor: new google.maps.Point(17, 34),
             scaledSize: new google.maps.Size(25, 25)
         };
+
         function initMap() {
             httpPostAsync(getAccessToken);
             var pyrmont = {
@@ -49,7 +52,7 @@
             var service = new google.maps.places.PlacesService(map);
             service.nearbySearch({
                 location: pyrmont,
-                radius: 500,
+                radius: 250,
                 type: ['restaurant']
             }, callback);
             map.addListener('bounds_changed', function(e) {
@@ -61,6 +64,7 @@
                 }, callback);
             });
         }
+
         function httpPostAsync(callback) {
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.open("POST", "https://api.yelp.com/oauth2/token", true); // true for asynchronous
@@ -71,6 +75,7 @@
             }
             xmlHttp.send("grant_type=client_credentials&client_id=S8ovIvKoG3sAcpD17a4cOw&client_secret=mi1kjVRhoXJ7UpjUF96kTKnOyEkG2Wszla3fwP4AmBSB1Igy3s8d3NpICOkrANLa");
         }
+
         function sentimentGet(type, id, callback) {
             //var xmlHttp = new XMLHttpRequest();
             //xmlHttp.open("GET", "http://yelpie.mybluemix.net/reviews?type=general&id=" + id, true); // true for asynchronous
@@ -94,11 +99,13 @@
                 }
             });
         }
+
         function getAccessToken(str) {
             json = JSON.parse(str);
             access_token = json.access_token.toString();
             console.log("ACCCCCESS" + access_token);
         }
+
         function callback(results, status) {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (var i = 0; i < results.length; i++) {
@@ -106,6 +113,7 @@
                 }
             }
         }
+
         function createMarker(place) {
             var jank = "?latitude=" + place.geometry.location.toString().substr(1).slice(0, -1).replace(", ", "&longitude=") + "&sort_by=distance";
             httpGetAsync(jank, function callbackR(results) {
@@ -119,28 +127,31 @@
                         position: place.geometry.location
                     });
                     if (sent > 0.5) {
-                      marker.setIcon('http://yelpie.000webhostapp.com/res/1.png');
+                        marker.setIcon('http://yelpie.000webhostapp.com/res/1.png');
                     } else if (sent > 0.25) {
-                      marker.setIcon('http://yelpie.000webhostapp.com/res/2.png');
+                        marker.setIcon('http://yelpie.000webhostapp.com/res/2.png');
                     } else if (sent > -0.25) {
-                      marker.setIcon('http://yelpie.000webhostapp.com/res/3.png');
+                        marker.setIcon('http://yelpie.000webhostapp.com/res/3.png');
                     } else if (sent > -0.5) {
-                      marker.setIcon('http://yelpie.000webhostapp.com/res/4.png');
+                        marker.setIcon('http://yelpie.000webhostapp.com/res/4.png');
                     } else {
-                      marker.setIcon('http://yelpie.000webhostapp.com/res/5.png');
+                        marker.setIcon('http://yelpie.000webhostapp.com/res/5.png');
                     }
-                });
-                sentimentGet("detailed", results.businesses[0].id, function callbackB(sentiment) {
+
+
                     google.maps.event.addListener(marker, 'click', function() {
-                        var det = parseDetailed(detailed);
-                        infowindow.setContent(det);
-                        infowindow.open(map, marker);
-                        console.log("success");
-                        console.log(JSON.stringify(place));
+                        sentimentGet("detailed", results.businesses[0].id, function callbackB(detailed) {
+                            var det = parseDetailed(detailed);
+                            infowindow.setContent(det);
+                            infowindow.open(map, marker);
+                            console.log("success");
+                            console.log(JSON.stringify(place));
+                        });
                     });
                 });
             });
         }
+
         function parseSentiment(sentiment) {
             var score = 0.0;
             for (var i = 0; i < 3; i++) {
@@ -149,19 +160,23 @@
             score /= 3.0;
             return score;
         }
+
         function parseDetailed(detailed) {
-          var str = "";
-          for (var i = 0; i < 3; i++) {
-            str += display[detailed[i].keywords[0].text] + ": " + detailed[i].keywords[0].sentiment.score + "\n";
-          }
-          return str;
+            var str = "";
+            for (var i = 0; i < 3; i++) {
+                det2=Math.floor(((detailed[i].keywords[0].sentiment.score)+0.5)*5);
+                str += detailed[i].keywords[0].text + ": " + det2 + "\n";
+            }
+            return str;
         }
+
         function getRadius() {
             var bounds = map.getBounds();
             var NE = bounds.getNorthEast();
             var SW = bounds.getSouthWest();
-            return (Math.abs(NE.lat() - SW.lat()) + Math.abs(NE.lng() - SW.lng())) * 55500;
+            return (Math.abs(NE.lat() - SW.lat()) + Math.abs(NE.lng() - SW.lng())) * 11100;
         }
+
         function httpGetAsync(theUrl, callback) {
             // var xmlHttp = new XMLHttpRequest();
             // xmlHttp.onreadystatechange = function() {

@@ -44,7 +44,7 @@ app.use("/getdata", function(req, res) {
 
 app.use("/getdata2", function(req, res) {
   //console.log('BLAIR')
-  var url = "http://yelpie.mybluemix.net/reviews";
+  var url = "http://yelpiev2.mybluemix.net/reviews";
   var id = req.query.id;
   var type = req.query.type;
 
