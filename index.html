@@ -9,12 +9,10 @@
     <style>
         /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
-
         #map {
             height: 100%;
         }
         /* Optional: Makes the sample page fill the window. */
-
         html,
         body {
             height: 100%;
@@ -26,7 +24,6 @@
         // This example requires the Places library. Include the libraries=places
         // parameter when you first load the API. For example:
         // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
-
         var map;
         var infowindow;
         var access_token;
@@ -38,19 +35,16 @@
             anchor: new google.maps.Point(17, 34),
             scaledSize: new google.maps.Size(25, 25)
         };
-
         function initMap() {
             httpPostAsync(getAccessToken);
             var pyrmont = {
                 lat: 37.548626,
                 lng: -122.059116
             };
-
             map = new google.maps.Map(document.getElementById('map'), {
                 center: pyrmont,
                 zoom: 15
             });
-
             infowindow = new google.maps.InfoWindow();
             var service = new google.maps.places.PlacesService(map);
             service.nearbySearch({
@@ -58,7 +52,6 @@
                 radius: 500,
                 type: ['restaurant']
             }, callback);
-
             map.addListener('bounds_changed', function(e) {
                 console.log(getRadius());
                 service.nearbySearch({
@@ -68,7 +61,6 @@
                 }, callback);
             });
         }
-
         function httpPostAsync(callback) {
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.open("POST", "https://api.yelp.com/oauth2/token", true); // true for asynchronous
@@ -79,7 +71,6 @@
             }
             xmlHttp.send("grant_type=client_credentials&client_id=S8ovIvKoG3sAcpD17a4cOw&client_secret=mi1kjVRhoXJ7UpjUF96kTKnOyEkG2Wszla3fwP4AmBSB1Igy3s8d3NpICOkrANLa");
         }
-
         function sentimentGet(id, callback) {
             //var xmlHttp = new XMLHttpRequest();
             //xmlHttp.open("GET", "http://yelpie.mybluemix.net/reviews?type=general&id=" + id, true); // true for asynchronous
@@ -103,13 +94,11 @@
                 }
             });
         }
-
         function getAccessToken(str) {
             json = JSON.parse(str);
             access_token = json.access_token.toString();
             console.log("ACCCCCESS" + access_token);
         }
-
         function callback(results, status) {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (var i = 0; i < results.length; i++) {
@@ -117,7 +106,6 @@
                 }
             }
         }
-
         function createMarker(place) {
             var placeLoc = place.geometry.location;
             var marker = new google.maps.Marker({
@@ -127,13 +115,12 @@
                 position: place.geometry.location
             });
             var jank = "?latitude=" + place.geometry.location.toString().substr(1).slice(0, -1).replace(", ", "&longitude=") + "&sort_by=distance";
-
             httpGetAsync(jank, function callbackR(results) {
-
                 google.maps.event.addListener(marker, 'click', function() {
                   sentimentGet(results.businesses[0].id, function callbackB(sentiment) {
                         console.log("sdf");
-                        infowindow.setContent(JSON.stringify(sentiment));
+                        sent = parseSentiment(sentiment);
+                        infowindow.setContent(sent);
                         console.log("sdd");
                         infowindow.open(map, marker);
                         console.log("success");
@@ -142,16 +129,21 @@
                 });
             });
         }
-
+        function parseSentiment(sentiment) {
+          var score = 0.0;
+          for (var i = 0; i < 3; i++) {
+            score += sentiment[i].sentiment.document.score;
+          }
+          score /= 3.0;
+          return score;
+        }
         function getRadius() {
             var bounds = map.getBounds();
             var NE = bounds.getNorthEast();
             var SW = bounds.getSouthWest();
             return (Math.abs(NE.lat() - SW.lat()) + Math.abs(NE.lng() - SW.lng())) * 55500;
         }
-
         function httpGetAsync(theUrl, callback) {
-
             // var xmlHttp = new XMLHttpRequest();
             // xmlHttp.onreadystatechange = function() {
             //     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
