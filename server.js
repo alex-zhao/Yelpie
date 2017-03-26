@@ -42,5 +42,27 @@ app.use("/getdata", function(req, res) {
 
 })
 
+app.use("/getdata2", function(req, res) {
+  //console.log('BLAIR')
+  var url = "http://yelpie.mybluemix.net/reviews";
+  var id = req.query.id;
+
+  request({
+	      url: url+'?type=general&id='+id,
+		    method: 'GET',
+
+	    },function(err, resp, body){
+	        if(err){
+	            console.log(err)
+	        }
+	        else{
+            console.log('blair');
+            console.log(body);
+	            res.send(JSON.parse(body));
+	        }
+	    })
+
+})
+
 app.use(express.static('public'));
 app.listen(3000);

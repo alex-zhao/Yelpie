@@ -55,7 +55,7 @@
             var service = new google.maps.places.PlacesService(map);
             service.nearbySearch({
                 location: pyrmont,
-                radius: 1000,
+                radius: 500,
                 type: ['restaurant']
             }, callback);
 
@@ -78,6 +78,30 @@
                     callback(xmlHttp.responseText);
             }
             xmlHttp.send("grant_type=client_credentials&client_id=S8ovIvKoG3sAcpD17a4cOw&client_secret=mi1kjVRhoXJ7UpjUF96kTKnOyEkG2Wszla3fwP4AmBSB1Igy3s8d3NpICOkrANLa");
+        }
+
+        function sentimentGet(id, callback) {
+            //var xmlHttp = new XMLHttpRequest();
+            //xmlHttp.open("GET", "http://yelpie.mybluemix.net/reviews?type=general&id=" + id, true); // true for asynchronous
+            //xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            //xmlHttp.onreadystatechange = function() {
+            //    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            //        callback(xmlHttp.responseText);
+            //}
+            //xmlHttp.send();
+            console.log(id);
+            $.ajax({
+                url: "http://0.0.0.0:3000/getdata2?id=" + id,
+                method: "GET",
+                dataType: "json",
+                success: function(data) {
+                  console.log("sdf");
+                    callback(data);
+                },
+                error: function(error) {
+                    console.log("AHHH BLAIR");
+                }
+            });
         }
 
         function getAccessToken(str) {
@@ -103,11 +127,18 @@
                 position: place.geometry.location
             });
             var jank = "?latitude=" + place.geometry.location.toString().substr(1).slice(0, -1).replace(", ", "&longitude=") + "&sort_by=distance";
+
             httpGetAsync(jank, function callbackR(results) {
+
                 google.maps.event.addListener(marker, 'click', function() {
-                    infowindow.setContent(results.businesses[0].id);
-                    infowindow.open(map, this);
-                    console.log(JSON.stringify(place));
+                  sentimentGet(results.businesses[0].id, function callbackB(sentiment) {
+                        console.log("sdf");
+                        infowindow.setContent(JSON.stringify(sentiment));
+                        console.log("sdd");
+                        infowindow.open(map, marker);
+                        console.log("success");
+                        console.log(JSON.stringify(place));
+                    });
                 });
             });
         }
