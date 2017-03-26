@@ -9,12 +9,10 @@
     <style>
         /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
-
         #map {
             height: 100%;
         }
         /* Optional: Makes the sample page fill the window. */
-
         html,
         body {
             height: 100%;
@@ -37,7 +35,6 @@
             anchor: new google.maps.Point(17, 34),
             scaledSize: new google.maps.Size(25, 25)
         };
-
         function initMap() {
             httpPostAsync(getAccessToken);
             var pyrmont = {
@@ -64,7 +61,6 @@
                 }, callback);
             });
         }
-
         function httpPostAsync(callback) {
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.open("POST", "https://api.yelp.com/oauth2/token", true); // true for asynchronous
@@ -75,7 +71,6 @@
             }
             xmlHttp.send("grant_type=client_credentials&client_id=S8ovIvKoG3sAcpD17a4cOw&client_secret=mi1kjVRhoXJ7UpjUF96kTKnOyEkG2Wszla3fwP4AmBSB1Igy3s8d3NpICOkrANLa");
         }
-
         function sentimentGet(type, id, callback) {
             //var xmlHttp = new XMLHttpRequest();
             //xmlHttp.open("GET", "http://yelpie.mybluemix.net/reviews?type=general&id=" + id, true); // true for asynchronous
@@ -99,13 +94,11 @@
                 }
             });
         }
-
         function getAccessToken(str) {
             json = JSON.parse(str);
             access_token = json.access_token.toString();
             console.log("ACCCCCESS" + access_token);
         }
-
         function callback(results, status) {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (var i = 0; i < results.length; i++) {
@@ -113,7 +106,6 @@
                 }
             }
         }
-
         function createMarker(place) {
             var jank = "?latitude=" + place.geometry.location.toString().substr(1).slice(0, -1).replace(", ", "&longitude=") + "&sort_by=distance";
             httpGetAsync(jank, function callbackR(results) {
@@ -129,8 +121,8 @@
                 });
                 sentimentGet("detailed", results.businesses[0].id, function callbackB(sentiment) {
                     google.maps.event.addListener(marker, 'click', function() {
-                        sent = parseSentiment(sentiment);
-                        infowindow.setContent(sent.toString());
+                        var det = parseDetailed(detailed);
+                        infowindow.setContent(det);
                         infowindow.open(map, marker);
                         console.log("success");
                         console.log(JSON.stringify(place));
@@ -138,7 +130,6 @@
                 });
             });
         }
-
         function parseSentiment(sentiment) {
             var score = 0.0;
             for (var i = 0; i < 3; i++) {
@@ -147,22 +138,19 @@
             score /= 3.0;
             return score;
         }
-
         function parseDetailed(detailed) {
-          var display = {};
+          var str = "";
           for (var i = 0; i < 3; i++) {
-            display[detailed[i].keywords[0].text] = detailed[i].keywords[0].sentiment.score;
+            str += display[detailed[i].keywords[0].text] + ": " + detailed[i].keywords[0].sentiment.score + "\n";
           }
-          return display;
+          return str;
         }
-
         function getRadius() {
             var bounds = map.getBounds();
             var NE = bounds.getNorthEast();
             var SW = bounds.getSouthWest();
             return (Math.abs(NE.lat() - SW.lat()) + Math.abs(NE.lng() - SW.lng())) * 55500;
         }
-
         function httpGetAsync(theUrl, callback) {
             // var xmlHttp = new XMLHttpRequest();
             // xmlHttp.onreadystatechange = function() {
