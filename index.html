@@ -118,10 +118,8 @@
             httpGetAsync(jank, function callbackR(results) {
                 google.maps.event.addListener(marker, 'click', function() {
                   sentimentGet(results.businesses[0].id, function callbackB(sentiment) {
-                        console.log("sdf");
                         sent = parseSentiment(sentiment);
-                        infowindow.setContent(sent);
-                        console.log("sdd");
+                        infowindow.setContent(sent.toString());
                         infowindow.open(map, marker);
                         console.log("success");
                         console.log(JSON.stringify(place));
@@ -136,6 +134,9 @@
           }
           score /= 3.0;
           return score;
+        }
+        function parseDetailed(detailed) {
+          
         }
         function getRadius() {
             var bounds = map.getBounds();
